@@ -7,6 +7,7 @@ from fastapi.params import Body
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
+from datetime import date
 
 load_dotenv()
 
@@ -35,8 +36,20 @@ while True:
 # source .venv/bin/activate  
 # uvicorn main:app --reload 
 
+class Item(BaseModel):
+    title: str
+    date: date
+
+# method for getting items
 @app.get("/items")
 async def get_items():
     cursor.execute("""SELECT * FROM items""")
     items = cursor.fetchall()
     return {"items": items}
+
+@app.post("/create-item", status_code=status.HTTP_201_CREATED)
+async def create_item(item: Item):
+    cursor.execute("""INSERT INTO items (title, date) VALUES (%s, %s) RETURNING *""", (item.title, item.date))
+    new_item = cursor.fetchone()
+    conn.commit()
+    return {"created_item": new_item}
