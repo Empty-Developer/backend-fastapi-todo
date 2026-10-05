@@ -1,47 +1,16 @@
-import os
-import psycopg
-import time
-from typing import Optional
-from fastapi import FastAPI, Response, HTTPException, status
-from fastapi.params import Body
-from pydantic import BaseModel
-from dotenv import load_dotenv
-from psycopg.rows import dict_row
-from datetime import date
+from fastapi import Depends, FastAPI, HTTPException, status
+from sqlalchemy.orm import Session
 
-load_dotenv()
+from schemas.items_schemas import ItemModel, UpdateItemModel
+from database.database import Base, engine, get_db
+from models.models import Item, User
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# database connection setup
-
-while True:
-    
-    try:
-        conn = psycopg.connect(
-            host=os.getenv("HOST"),
-            dbname=os.getenv("DBNAME"),
-            user=os.getenv("DB_USER"),
-            password=os.getenv("PASSWORD"),
-            port=os.getenv("PORT"),
-            row_factory=dict_row
-        )
-        cursor = conn.cursor() 
-        print("Connected to the database successfully!")
-        break
-    except Exception as err:
-        print(f"Error connecting to the database: {err}")
-        time.sleep(5)  # wait for 5 seconds before retrying
-
 # source .venv/bin/activate  
 # uvicorn main:app --reload 
-
-class Item(BaseModel):
-    title: str
-    date: date
-
-class UpdateItem(BaseModel):
-    is_check: bool
 
 # method for getting items
 @app.get("/items")
@@ -52,7 +21,7 @@ async def get_items():
 
 # method for creating a new item
 @app.post("/create-item", status_code=status.HTTP_201_CREATED)
-async def create_item(item: Item):
+async def create_item(item: ItemModel):
     cursor.execute("""INSERT INTO items (title, date) VALUES (%s, %s) RETURNING *""", (item.title, item.date))
     new_item = cursor.fetchone()
     conn.commit()
@@ -80,7 +49,7 @@ async def delete_item(id: int):
 
 # method for updating an item
 @app.put("/items/{id}", status_code=status.HTTP_200_OK)
-async def update_item(id: int, item: Item):
+async def update_item(id: int, item: ItemModel):
     cursor.execute("""UPDATE items SET title = %s, date = %s WHERE id = %s RETURNING *""", (item.title, item.date, id))
     updated_item = cursor.fetchone()
     conn.commit()
@@ -90,7 +59,7 @@ async def update_item(id: int, item: Item):
 
 # method update one property of an item
 @app.patch("/items/{id}", status_code=status.HTTP_200_OK)
-async def update_one_property(id: int, item: UpdateItem):
+async def update_one_property(id: int, item: UpdateItemModel):
     if item.is_check is not None:
         cursor.execute("""UPDATE items SET is_check = %s WHERE id = %s RETURNING *""", (item.is_check, id))
     updated_item = cursor.fetchone()

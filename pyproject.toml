@@ -1,0 +1,19 @@
+[project]
+name = "backend-fastapi-todo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Empty", email = "emptypageworking@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "sqlmodel>=0.0.47",
+]
+
+[project.scripts]
+backend-fastapi-todo = "backend_fastapi_todo:main"
+
+[build-system]
+requires = ["uv_build>=0.12.17,<0.13.0"]
+build-backend = "uv_build"
