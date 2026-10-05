@@ -47,9 +47,28 @@ async def get_items():
     items = cursor.fetchall()
     return {"items": items}
 
+# method for creating a new item
 @app.post("/create-item", status_code=status.HTTP_201_CREATED)
 async def create_item(item: Item):
     cursor.execute("""INSERT INTO items (title, date) VALUES (%s, %s) RETURNING *""", (item.title, item.date))
     new_item = cursor.fetchone()
     conn.commit()
     return {"created_item": new_item}
+
+# method for getting a single item by ID
+@app.get("/items/{id}")
+async def get_item(id: int):
+    cursor.execute("""SELECT * FROM items WHERE id = %s""", (id,))
+    item = cursor.fetchone()
+    if not item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    return {"item": item}
+
+
+
+
+# method for deleting an item
+
+
+
+# method for updating an item
