@@ -40,6 +40,9 @@ class Item(BaseModel):
     title: str
     date: date
 
+class UpdateItem(BaseModel):
+    is_check: bool
+
 # method for getting items
 @app.get("/items")
 async def get_items():
@@ -64,11 +67,34 @@ async def get_item(id: int):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     return {"item": item}
 
-
-
-
 # method for deleting an item
-
+@app.delete("/items/{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_item(id: int):
+    cursor.execute("""DELETE FROM items WHERE id = %s RETURNING *""", (id,))
+    deleted_item = cursor.fetchone()
+    conn.commit()
+    if not deleted_item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    return {"deleted_item": deleted_item}
 
 
 # method for updating an item
+@app.put("/items/{id}", status_code=status.HTTP_200_OK)
+async def update_item(id: int, item: Item):
+    cursor.execute("""UPDATE items SET title = %s, date = %s WHERE id = %s RETURNING *""", (item.title, item.date, id))
+    updated_item = cursor.fetchone()
+    conn.commit()
+    if not updated_item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    return {"updated_item": updated_item}
+
+# method update one property of an item
+@app.patch("/items/{id}", status_code=status.HTTP_200_OK)
+async def update_one_property(id: int, item: UpdateItem):
+    if item.is_check is not None:
+        cursor.execute("""UPDATE items SET is_check = %s WHERE id = %s RETURNING *""", (item.is_check, id))
+    updated_item = cursor.fetchone()
+    conn.commit()
+    if not updated_item:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+    return {"updated_item": updated_item}
