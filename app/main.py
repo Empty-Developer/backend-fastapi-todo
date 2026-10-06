@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from schemas.items_schemas import ItemModel, UpdateItemModel
 from database.database import Base, engine, get_db
-from models.models import Item, User
+from models import Item, User
 
 Base.metadata.create_all(bind=engine)
 
@@ -67,3 +67,8 @@ async def update_one_property(id: int, item: UpdateItemModel):
     if not updated_item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
     return {"updated_item": updated_item}
+
+@app.get("get_items")
+def test_items(db: Session = Depends(get_db)):
+    items = db.query(Item).all()
+    return {"items": items}
