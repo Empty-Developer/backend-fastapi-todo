@@ -35,19 +35,18 @@ async def create_item(item: ItemModel, db: Session = Depends(get_db)):
     db.refresh(new_item)
     return {"created_item": new_item}
 
-# FIX
 # method for deleting an item
 @app.delete("/items/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_item(id: int, db: Session = Depends(get_db)):
     item = db.query(Item).filter(Item.id == id).first()
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Item not found"
+        )
     db.delete(item)
     db.commit()
-    if not deleted_item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    return {"deleted_item": deleted_item}
-
+    return {"deleted_item": item}
 
 # method for updating an item
 @app.put("/items/{id}", status_code=status.HTTP_200_OK)
@@ -59,10 +58,7 @@ async def update_item(id: int, item: ItemModel, db: Session = Depends(get_db)):
     db_item.date = item.date
     db.commit()
     db.refresh(db_item)
-    conn.commit()
-    if not updated_item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
-    return {"updated_item": updated_item}
+    return {"updated_item": db_item}
 
 # method update one property of an item
 @app.patch("/items/{id}", status_code=status.HTTP_200_OK)
