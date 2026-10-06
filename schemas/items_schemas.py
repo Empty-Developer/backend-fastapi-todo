@@ -1,10 +1,10 @@
 from pydantic import BaseModel
 from datetime import date
 
-class ItemModel(BaseModel):
+class ItemBase(BaseModel):
     title: str
     date: date
     user_id: int
 
-class UpdateItemModel(BaseModel):
+class UpdateItemBase(BaseModel):
     is_check: bool

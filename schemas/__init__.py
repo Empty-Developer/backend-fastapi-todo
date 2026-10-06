@@ -1,4 +1,5 @@
-from .items_schemas import ItemModel, UpdateItemModel
-from .user_schemas import UserModel
+from .items_schemas import ItemBase, UpdateItemBase
+from .user_schemas import UserCreate 
 
-__all__ = [ItemModel, UpdateItemModel, UserModel]
+
+__all__ = [ItemBase, UpdateItemBase, UserCreate]

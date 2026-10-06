@@ -1,7 +1,8 @@
 from fastapi import Depends, FastAPI, HTTPException, status
+from schemas.user_schemas import UserCreate, UserOut
 from sqlalchemy.orm import Session
 
-from schemas.items_schemas import ItemModel, UpdateItemModel
+from schemas.items_schemas import ItemBase, UpdateItemBase
 from database.database import Base, engine, get_db
 from models import Item, User
 
@@ -28,7 +29,7 @@ async def get_item(id: int, db: Session = Depends(get_db)):
 
 # method for creating a new item
 @app.post("/create-item", status_code=status.HTTP_201_CREATED)
-async def create_item(item: ItemModel, db: Session = Depends(get_db)):
+async def create_item(item: ItemBase, db: Session = Depends(get_db)):
     new_item = Item(title=item.title, date=item.date, user_id=item.user_id)
     db.add(new_item)
     db.commit()
@@ -50,7 +51,7 @@ async def delete_item(id: int, db: Session = Depends(get_db)):
 
 # method for updating an item
 @app.put("/items/{id}", status_code=status.HTTP_200_OK)
-async def update_item(id: int, item: ItemModel, db: Session = Depends(get_db)):
+async def update_item(id: int, item: ItemBase, db: Session = Depends(get_db)):
     db_item = db.query(Item).filter(Item.id == id).first()
     if not db_item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
@@ -62,7 +63,7 @@ async def update_item(id: int, item: ItemModel, db: Session = Depends(get_db)):
 
 # method update one property of an item
 @app.patch("/items/{id}", status_code=status.HTTP_200_OK)
-async def update_one_property(id: int, item: UpdateItemModel, db: Session = Depends(get_db)):
+async def update_one_property(id: int, item: UpdateItemBase, db: Session = Depends(get_db)):
     if item.is_check is not None:
         db_item = db.query(Item).filter(Item.id == id).first()
         if not db_item:
@@ -71,3 +72,12 @@ async def update_one_property(id: int, item: UpdateItemModel, db: Session = Depe
         db.commit()
         db.refresh(db_item)
     return {"updated_item": db_item}
+
+
+@app.post("/users", status_code=status.HTTP_201_CREATED, response_model=UserOut)
+async def create_user(user: UserCreate, db: Session = Depends(get_db)):
+    new_user = User(email=user.email, password=user.password)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
