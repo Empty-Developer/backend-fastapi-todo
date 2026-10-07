@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from schemas.items_schemas import ItemBase, UpdateItemBase
 from database.database import Base, engine, get_db
 from models import Item, User
+from core import hash
 
 Base.metadata.create_all(bind=engine)
 
@@ -76,6 +77,10 @@ async def update_one_property(id: int, item: UpdateItemBase, db: Session = Depen
 
 @app.post("/users", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
+
+    hashed_password = hash(user.password)
+    user.password = hashed_password
+
     new_user = User(email=user.email, password=user.password)
     db.add(new_user)
     db.commit()

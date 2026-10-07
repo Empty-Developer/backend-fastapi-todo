@@ -1,10 +1,10 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from datetime import datetime
     
 
 class UserCreate(BaseModel):
     email: EmailStr
-    password: str
+    password: str  = Field(min_length=8, max_length=72)
 
 class UserOut(BaseModel):
     id: int
@@ -12,4 +12,4 @@ class UserOut(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
