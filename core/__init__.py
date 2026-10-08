@@ -1,3 +1,3 @@
-from .security import hash
+from .security import hash, verify
 
-__all__ = [hash]
+__all__ = [hash, verify]

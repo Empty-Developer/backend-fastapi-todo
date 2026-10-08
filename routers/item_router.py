@@ -5,16 +5,18 @@ from schemas.items_schemas import ItemBase, UpdateItemBase
 from sqlalchemy.orm import Session
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/items"
+)
 
 # method for getting items
-@router.get("/items")
+@router.get("")
 async def get_items(db: Session = Depends(get_db)):
     items = db.query(Item).all()
     return {"items": items}
 
 # method for getting a single item by ID
-@router.get("/items/{id}")
+@router.get("/{id}")
 async def get_item_by_id(id: int, db: Session = Depends(get_db)):
     item = db.query(Item).filter(Item.id == id).first()
     if not item:
@@ -22,7 +24,7 @@ async def get_item_by_id(id: int, db: Session = Depends(get_db)):
     return {"item": item}
 
 # method for creating a new item
-@router.post("/create-item", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_item(item: ItemBase, db: Session = Depends(get_db)):
     new_item = Item(title=item.title, date=item.date, user_id=item.user_id)
     db.add(new_item)
@@ -31,7 +33,7 @@ async def create_item(item: ItemBase, db: Session = Depends(get_db)):
     return {"created_item": new_item}
 
 # method for deleting an item
-@router.delete("/items/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_item(id: int, db: Session = Depends(get_db)):
     item = db.query(Item).filter(Item.id == id).first()
     if not item:
@@ -44,7 +46,7 @@ async def delete_item(id: int, db: Session = Depends(get_db)):
     return {"deleted_item": item}
 
 # method for updating an item
-@router.put("/items/{id}", status_code=status.HTTP_200_OK)
+@router.put("/{id}", status_code=status.HTTP_200_OK)
 async def update_item(id: int, item: ItemBase, db: Session = Depends(get_db)):
     db_item = db.query(Item).filter(Item.id == id).first()
     if not db_item:

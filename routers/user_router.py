@@ -5,9 +5,11 @@ from schemas.user_schemas import UserCreate, UserOut
 from sqlalchemy.orm import Session
 from core import hash
 
-router = APIRouter()
+router = APIRouter(
+    prefix = "/users"
+)
 
-@router.post("/users", status_code=status.HTTP_201_CREATED, response_model=UserOut)
+@router.post("", status_code=status.HTTP_201_CREATED, response_model=UserOut)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
     hashed_password = hash(user.password)
@@ -19,7 +21,7 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-@router.get("/users/{id}", response_model=UserOut)
+@router.get("/{id}", response_model=UserOut)
 async def get_user_by_id(id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == id).first()
     if not user:

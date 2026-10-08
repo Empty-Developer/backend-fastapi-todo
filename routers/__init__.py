@@ -1,5 +1,6 @@
 from .user_router import get_user_by_id, create_user
 from .item_router import get_item_by_id, get_items, create_item, delete_item, update_one_property, update_item
+from .auth import login
 
 __all__ = [
     "get_user_by_id",
@@ -9,5 +10,6 @@ __all__ = [
     "create_item",
     "delete_item",
     "update_one_property",
-    "update_item"
+    "update_item",
+    "login"
 ]
