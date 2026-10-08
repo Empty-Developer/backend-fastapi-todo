@@ -1,3 +1,4 @@
+from core import get_current_user
 from models import Item
 from fastapi import Depends, HTTPException, status, APIRouter
 from database.database import get_db
@@ -11,13 +12,13 @@ router = APIRouter(
 
 # method for getting items
 @router.get("")
-async def get_items(db: Session = Depends(get_db)):
+async def get_items(db: Session = Depends(get_db), get_current_user: int = Depends(get_current_user)):
     items = db.query(Item).all()
     return {"items": items}
 
 # method for getting a single item by ID
 @router.get("/{id}")
-async def get_item_by_id(id: int, db: Session = Depends(get_db)):
+async def get_item_by_id(id: int, db: Session = Depends(get_db), get_current_user: int = Depends(get_current_user)):
     item = db.query(Item).filter(Item.id == id).first()
     if not item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
@@ -25,7 +26,7 @@ async def get_item_by_id(id: int, db: Session = Depends(get_db)):
 
 # method for creating a new item
 @router.post("", status_code=status.HTTP_201_CREATED)
-async def create_item(item: ItemBase, db: Session = Depends(get_db)):
+async def create_item(item: ItemBase, db: Session = Depends(get_db), get_current_user: int = Depends(get_current_user)):
     new_item = Item(title=item.title, date=item.date, user_id=item.user_id)
     db.add(new_item)
     db.commit()
@@ -34,7 +35,7 @@ async def create_item(item: ItemBase, db: Session = Depends(get_db)):
 
 # method for deleting an item
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_item(id: int, db: Session = Depends(get_db)):
+async def delete_item(id: int, db: Session = Depends(get_db), get_current_user: int = Depends(get_current_user)):
     item = db.query(Item).filter(Item.id == id).first()
     if not item:
         raise HTTPException(
@@ -47,7 +48,7 @@ async def delete_item(id: int, db: Session = Depends(get_db)):
 
 # method for updating an item
 @router.put("/{id}", status_code=status.HTTP_200_OK)
-async def update_item(id: int, item: ItemBase, db: Session = Depends(get_db)):
+async def update_item(id: int, item: ItemBase, db: Session = Depends(get_db), get_current_user: int = Depends(get_current_user)):
     db_item = db.query(Item).filter(Item.id == id).first()
     if not db_item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
@@ -59,7 +60,7 @@ async def update_item(id: int, item: ItemBase, db: Session = Depends(get_db)):
 
 # method update one property of an item
 @router.patch("/items/{id}", status_code=status.HTTP_200_OK)
-async def update_one_property(id: int, item: UpdateItemBase, db: Session = Depends(get_db)):
+async def update_one_property(id: int, item: UpdateItemBase, db: Session = Depends(get_db), get_current_user: int = Depends(get_current_user)):
     if item.is_check is not None:
         db_item = db.query(Item).filter(Item.id == id).first()
         if not db_item:
