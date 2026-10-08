@@ -1,3 +1,4 @@
 from .security import hash, verify
+from .oauth import create_access_token
 
-__all__ = [hash, verify]
+__all__ = [hash, verify, create_access_token]
